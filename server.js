@@ -1,8 +1,11 @@
+/* eslint-disable object-shorthand */
+/* eslint-disable prefer-destructuring */
 require('dotenv').config();
 require('./config/database');
 
 const express = require('express');
 const morgan = require('morgan');
+const methodOverride = require('method-override');
 
 // Models
 const Fruit = require('./models/fruit.js');
@@ -10,6 +13,7 @@ const Fruit = require('./models/fruit.js');
 const app = express();
 
 // MIDDLEWARE
+app.use(methodOverride('_method'));
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: false }));
 
@@ -21,6 +25,18 @@ app.get('/', async (req, res) => {
 // GET /fruits/new
 app.get('/fruits/new', (req, res) => {
   res.render('fruits/new.ejs');
+});
+
+app.get('/fruits/:fruitId', async (req, res) => {
+  const fruitId = req.params.fruitId;
+  const fruit = await Fruit.findById(fruitId);
+  res.render('fruits/show.ejs', { fruit: fruit });
+});
+
+app.delete('/fruits/:fruitId', async (req, res) => {
+  const fruitId = req.params.fruitId;
+  await Fruit.findByIdAndDelete(fruitId);
+  res.redirect('/fruits');
 });
 
 // GET /fruits
